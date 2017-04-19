@@ -1,0 +1,39 @@
+name: monad-persist
+version: 0.0.1.0
+category: Database
+synopsis: An mtl-style typeclass and transformer for persistent.
+description: An mtl-style typeclass and transformer for persistent.
+author: Alexis King <lexi.lambda@gmail.com>
+maintainer: Alexis King <lexi.lambda@gmail.com>
+
+extra-source-files:
+- CHANGELOG.md
+- package.yaml
+- README.md
+- stack.yaml
+
+ghc-options: -Wall
+
+library:
+  dependencies:
+  - base
+  - monad-control >= 1.0.0.0 && < 2
+  - monad-logger >= 0.3.10
+  - mtl
+  - persistent >= 2.5 && < 3
+  - text
+  - transformers-base
+  source-dirs: library
+
+tests:
+  monad-persist-test-suite:
+    dependencies:
+    - base
+    - monad-persist
+    - hspec
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+    main: Main.hs
+    source-dirs: test-suite
