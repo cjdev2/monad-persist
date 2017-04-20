@@ -29,8 +29,14 @@ tests:
   monad-persist-test-suite:
     dependencies:
     - base
-    - monad-persist
     - hspec
+    - monad-control
+    - monad-logger
+    - monad-persist
+    - persistent
+    - persistent-sqlite
+    - persistent-template
+    - text
     ghc-options:
     - -rtsopts
     - -threaded

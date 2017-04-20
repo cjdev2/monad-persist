@@ -5,6 +5,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -61,7 +62,7 @@ import Data.Text (Text)
 import Database.Persist.Sql
   ( CautiousMigration
   , DeleteCascade
-  , Entity
+  , Entity(..)
   , Filter
   , IsPersistBackend
   , Key
