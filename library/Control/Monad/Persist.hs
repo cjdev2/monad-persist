@@ -40,6 +40,7 @@ module Control.Monad.Persist
 import qualified Database.Persist.Sql as Sql
 
 import Control.Monad.Base (MonadBase)
+import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Except (MonadError, ExceptT)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Logger (MonadLogger, MonadLoggerIO, LoggingT, NoLoggingT)
@@ -90,8 +91,9 @@ import Database.Persist.Sql
 -- If you are using a SQL database, it’s /highly/ recommended that you use the
 -- simpler 'SqlPersistT' alias, instead.
 newtype PersistT backend m a = PersistT (ReaderT backend m a)
-  deriving ( Functor, Applicative, Monad, MonadTrans, MonadBase b, MonadError e
-           , MonadIO, MonadLogger, MonadLoggerIO, MonadState s, MonadWriter w )
+  deriving ( Functor, Applicative, Monad, MonadTrans, MonadBase b, MonadCatch
+           , MonadMask, MonadThrow, MonadError e, MonadIO, MonadLogger
+           , MonadLoggerIO, MonadState s, MonadWriter w )
 
 -- | Runs a 'PersistT' computation with an arbitrary backend.
 --
