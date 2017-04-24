@@ -1,5 +1,5 @@
 name: monad-persist
-version: 0.0.1.0
+version: 0.0.1.1
 category: Database
 synopsis: An mtl-style typeclass and transformer for persistent.
 description: An mtl-style typeclass and transformer for persistent.
