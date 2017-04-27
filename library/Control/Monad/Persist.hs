@@ -39,7 +39,7 @@ module Control.Monad.Persist
 
 import qualified Database.Persist.Sql as Sql
 
-import Control.Monad.Base (MonadBase)
+import Control.Monad.Base (MonadBase, liftBase)
 import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Except (MonadError, ExceptT)
 import Control.Monad.IO.Class (MonadIO)
@@ -108,7 +108,7 @@ type SqlPersistT = PersistT SqlBackend
 
 -- | Runs a 'SqlPersistT' computation against a SQL database. __Unlike__
 -- 'runPersistT', the computation is run inside a transaction.
-runSqlPersistT :: (MonadIO m, MonadBaseControl IO m) => SqlPersistT m a -> SqlBackend -> m a
+runSqlPersistT :: MonadBaseControl IO m => SqlPersistT m a -> SqlBackend -> m a
 runSqlPersistT (PersistT m) = runSqlConn m
 {-# INLINE runSqlPersistT #-}
 
@@ -391,53 +391,56 @@ class Monad m => MonadPersist backend m | m -> backend where
 -- | A simple alias that specializes 'MonadPersist' to 'SqlBackend'.
 type MonadSqlPersist = MonadPersist SqlBackend
 
-instance (MonadIO m, MonadBaseControl IO m) => MonadPersist backend (PersistT backend m) where
-  get a = PersistT $ Sql.get a
-  insert a = PersistT $ Sql.insert a
-  insert_ a = PersistT $ Sql.insert_ a
-  insertMany a = PersistT $ Sql.insertMany a
-  insertMany_ a = PersistT $ Sql.insertMany_ a
-  insertEntityMany a = PersistT $ Sql.insertEntityMany a
-  insertKey a b = PersistT $ Sql.insertKey a b
-  repsert a b = PersistT $ Sql.repsert a b
-  replace a b = PersistT $ Sql.replace a b
-  delete a = PersistT $ Sql.delete a
-  update a b = PersistT $ Sql.update a b
-  updateGet a b = PersistT $ Sql.updateGet a b
-  getJust a = PersistT $ Sql.getJust a
-  belongsTo a b = PersistT $ Sql.belongsTo a b
-  belongsToJust a b = PersistT $ Sql.belongsToJust a b
-  insertEntity a = PersistT $ Sql.insertEntity a
-  getBy a = PersistT $ Sql.getBy a
-  deleteBy a = PersistT $ Sql.deleteBy a
-  insertUnique a = PersistT $ Sql.insertUnique a
-  upsert a b = PersistT $ Sql.upsert a b
-  getByValue a = PersistT $ Sql.getByValue a
-  insertBy a = PersistT $ Sql.insertBy a
-  replaceUnique a b = PersistT $ Sql.replaceUnique a b
-  checkUnique a = PersistT $ Sql.checkUnique a
-  onlyUnique a = PersistT $ Sql.onlyUnique a
-  selectFirst a b = PersistT $ Sql.selectFirst a b
-  count a = PersistT $ Sql.count a
-  updateWhere a b = PersistT $ Sql.updateWhere a b
-  deleteWhere a = PersistT $ Sql.deleteWhere a
-  selectList a b = PersistT $ Sql.selectList a b
-  selectKeysList a b = PersistT $ Sql.selectKeysList a b
-  deleteCascade a = PersistT $ Sql.deleteCascade a
-  deleteCascadeWhere a = PersistT $ Sql.deleteCascadeWhere a
-  parseMigration a = PersistT $ Sql.parseMigration a
-  parseMigration' a = PersistT $ Sql.parseMigration' a
-  printMigration a = PersistT $ Sql.printMigration a
-  showMigration a = PersistT $ Sql.showMigration a
-  getMigration a = PersistT $ Sql.getMigration a
-  runMigration a = PersistT $ Sql.runMigration a
-  runMigrationSilent a = PersistT $ Sql.runMigrationSilent a
-  runMigrationUnsafe a = PersistT $ Sql.runMigrationUnsafe a
-  rawExecute a b = PersistT $ Sql.rawExecute a b
-  rawExecuteCount a b = PersistT $ Sql.rawExecuteCount a b
-  rawSql a b = PersistT $ Sql.rawSql a b
-  transactionSave = PersistT Sql.transactionSave
-  transactionUndo = PersistT Sql.transactionUndo
+liftPersistT :: MonadBaseControl IO m => ReaderT backend IO a -> PersistT backend m a
+liftPersistT x = PersistT $ ask >>= \conn -> liftBase $ runReaderT x conn
+
+instance MonadBaseControl IO m => MonadPersist backend (PersistT backend m) where
+  get a = liftPersistT $ Sql.get a
+  insert a = liftPersistT $ Sql.insert a
+  insert_ a = liftPersistT $ Sql.insert_ a
+  insertMany a = liftPersistT $ Sql.insertMany a
+  insertMany_ a = liftPersistT $ Sql.insertMany_ a
+  insertEntityMany a = liftPersistT $ Sql.insertEntityMany a
+  insertKey a b = liftPersistT $ Sql.insertKey a b
+  repsert a b = liftPersistT $ Sql.repsert a b
+  replace a b = liftPersistT $ Sql.replace a b
+  delete a = liftPersistT $ Sql.delete a
+  update a b = liftPersistT $ Sql.update a b
+  updateGet a b = liftPersistT $ Sql.updateGet a b
+  getJust a = liftPersistT $ Sql.getJust a
+  belongsTo a b = liftPersistT $ Sql.belongsTo a b
+  belongsToJust a b = liftPersistT $ Sql.belongsToJust a b
+  insertEntity a = liftPersistT $ Sql.insertEntity a
+  getBy a = liftPersistT $ Sql.getBy a
+  deleteBy a = liftPersistT $ Sql.deleteBy a
+  insertUnique a = liftPersistT $ Sql.insertUnique a
+  upsert a b = liftPersistT $ Sql.upsert a b
+  getByValue a = liftPersistT $ Sql.getByValue a
+  insertBy a = liftPersistT $ Sql.insertBy a
+  replaceUnique a b = liftPersistT $ Sql.replaceUnique a b
+  checkUnique a = liftPersistT $ Sql.checkUnique a
+  onlyUnique a = liftPersistT $ Sql.onlyUnique a
+  selectFirst a b = liftPersistT $ Sql.selectFirst a b
+  count a = liftPersistT $ Sql.count a
+  updateWhere a b = liftPersistT $ Sql.updateWhere a b
+  deleteWhere a = liftPersistT $ Sql.deleteWhere a
+  selectList a b = liftPersistT $ Sql.selectList a b
+  selectKeysList a b = liftPersistT $ Sql.selectKeysList a b
+  deleteCascade a = liftPersistT $ Sql.deleteCascade a
+  deleteCascadeWhere a = liftPersistT $ Sql.deleteCascadeWhere a
+  parseMigration a = liftPersistT $ Sql.parseMigration a
+  parseMigration' a = liftPersistT $ Sql.parseMigration' a
+  printMigration a = liftPersistT $ Sql.printMigration a
+  showMigration a = liftPersistT $ Sql.showMigration a
+  getMigration a = liftPersistT $ Sql.getMigration a
+  runMigration a = liftPersistT $ Sql.runMigration a
+  runMigrationSilent a = liftPersistT $ Sql.runMigrationSilent a
+  runMigrationUnsafe a = liftPersistT $ Sql.runMigrationUnsafe a
+  rawExecute a b = liftPersistT $ Sql.rawExecute a b
+  rawExecuteCount a b = liftPersistT $ Sql.rawExecuteCount a b
+  rawSql a b = liftPersistT $ Sql.rawSql a b
+  transactionSave = liftPersistT Sql.transactionSave
+  transactionUndo = liftPersistT Sql.transactionUndo
 
   {-# INLINE get #-}
   {-# INLINE insert #-}
@@ -487,13 +490,13 @@ instance (MonadIO m, MonadBaseControl IO m) => MonadPersist backend (PersistT ba
   {-# INLINE transactionUndo #-}
 
 #if MIN_VERSION_persistent(2,6,0)
-  upsertBy a b c = PersistT $ Sql.upsertBy a b c
+  upsertBy a b c = liftPersistT $ Sql.upsertBy a b c
   {-# INLINE upsertBy #-}
 #endif
 #if MIN_VERSION_persistent(2,6,1)
-  getJustEntity a = PersistT $ Sql.getJustEntity a
-  getEntity a = PersistT $ Sql.getEntity a
-  insertRecord a = PersistT $ Sql.insertRecord a
+  getJustEntity a = liftPersistT $ Sql.getJustEntity a
+  getEntity a = liftPersistT $ Sql.getEntity a
+  insertRecord a = liftPersistT $ Sql.insertRecord a
 
   {-# INLINE getJustEntity #-}
   {-# INLINE getEntity #-}
