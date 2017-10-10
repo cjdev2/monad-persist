@@ -35,6 +35,7 @@ module Control.Monad.Persist
   , MonadSqlPersist
   , SqlPersistT
   , runSqlPersistT
+  , runSqlPoolPersistT
   ) where
 
 import qualified Database.Persist.Sql as Sql
@@ -62,6 +63,7 @@ import Data.Int (Int64)
 import Data.Text (Text)
 import Database.Persist.Sql
   ( CautiousMigration
+  , ConnectionPool
   , DeleteCascade
   , Entity(..)
   , Filter
@@ -83,6 +85,7 @@ import Database.Persist.Sql
   , Unique
   , Update
   , runSqlConn
+  , runSqlPool
   )
 
 -- | A concrete monad transformer that implements 'MonadPersist'. To run it, use
@@ -111,6 +114,12 @@ type SqlPersistT = PersistT SqlBackend
 runSqlPersistT :: MonadBaseControl IO m => SqlPersistT m a -> SqlBackend -> m a
 runSqlPersistT (PersistT m) = runSqlConn m
 {-# INLINE runSqlPersistT #-}
+
+-- | Runs a 'SqlPersistT' computation against a SQL database using a pool of
+-- connections. The computation is run inside a transaction.
+runSqlPoolPersistT :: MonadBaseControl IO m => SqlPersistT m a -> ConnectionPool -> m a
+runSqlPoolPersistT (PersistT m) = runSqlPool m
+{-# INLINE runSqlPoolPersistT #-}
 
 instance MonadTransControl (PersistT backend) where
   type StT (PersistT backend) a = StT (ReaderT SqlBackend) a
