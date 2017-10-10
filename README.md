@@ -30,5 +30,8 @@ Migrating: CREATE TABLE "user"("id" INTEGER PRIMARY KEY,"name" VARCHAR NOT NULL,
 [Entity {entityKey = UserKey {unUserKey = SqlBackendKey {unSqlBackendKey = 1}}, entityVal = User {userName = "Alyssa", userEmail = "alyssa@example.com"}}]
 ```
 
+[For more information, see the documentation on Hackage.][monad-persist]
+
+[monad-persist]: http://hackage.haskell.org/package/monad-persist
 [mtl]: https://hackage.haskell.org/package/mtl
 [persistent]: https://hackage.haskell.org/package/persistent
