@@ -6,6 +6,7 @@ description: An mtl-style typeclass and transformer for persistent.
 author: Alexis King <lexi.lambda@gmail.com>
 maintainer: Alexis King <lexi.lambda@gmail.com>
 copyright: 2017 CJ Affiliate by Conversant
+github: cjdev/monad-persist
 
 license: ISC
 extra-source-files:
