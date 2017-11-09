@@ -58,6 +58,7 @@ import Control.Monad.Trans.Control
   , defaultRestoreM
   , defaultRestoreT
   )
+import Control.Monad.Trans.Identity (IdentityT)
 import Control.Monad.Writer (MonadWriter, WriterT)
 import Data.Int (Int64)
 import Data.Text (Text)
@@ -513,6 +514,7 @@ instance MonadBaseControl IO m => MonadPersist backend (PersistT backend m) wher
 #endif
 
 instance MonadPersist backend m => MonadPersist backend (ExceptT e m)
+instance MonadPersist backend m => MonadPersist backend (IdentityT m)
 instance MonadPersist backend m => MonadPersist backend (ReaderT r m)
 instance (Monoid w, MonadPersist backend m) => MonadPersist backend (RWST r w s m)
 instance MonadPersist backend m => MonadPersist backend (StateT s m)

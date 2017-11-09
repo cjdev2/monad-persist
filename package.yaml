@@ -26,11 +26,8 @@ library:
   - mtl
   - persistent >= 2.5 && < 3
   - text
+  - transformers
   - transformers-base
-  when:
-  - condition: impl(ghc < 8)
-    dependencies:
-    - transformers
   source-dirs: library
 
 tests:
