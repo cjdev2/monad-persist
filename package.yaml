@@ -19,7 +19,7 @@ ghc-options: -Wall
 
 library:
   dependencies:
-  - base >= 4.7 && < 5
+  - base >= 4.8 && < 5
   - exceptions >= 0.6
   - monad-control >= 1.0.0.0 && < 2
   - monad-logger >= 0.3.10
