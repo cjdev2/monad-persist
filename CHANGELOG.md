@@ -1,3 +1,7 @@
+## 0.0.2.0 (November 9th, 2017)
+
+- Added lifting instance for `MonadPersist` for `IdentityT`.
+
 ## 0.0.1.4 (October 10th, 2017)
 
 - Fixed package dependencies for GHC 7.8 and 7.10.
