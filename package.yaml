@@ -28,6 +28,7 @@ library:
   - text
   - transformers
   - transformers-base
+  - unliftio-core
   source-dirs: library
 
 tests:
@@ -42,6 +43,7 @@ tests:
     - persistent-sqlite
     - persistent-template
     - text
+    - unliftio-core
     ghc-options:
     - -rtsopts
     - -threaded

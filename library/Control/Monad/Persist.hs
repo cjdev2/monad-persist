@@ -44,6 +44,7 @@ import Control.Monad.Base (MonadBase, liftBase)
 import Control.Monad.Catch (MonadCatch, MonadMask, MonadThrow)
 import Control.Monad.Except (MonadError, ExceptT)
 import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.IO.Unlift (MonadUnliftIO)
 import Control.Monad.Logger (MonadLogger, MonadLoggerIO, LoggingT, NoLoggingT)
 import Control.Monad.Reader (MonadReader(..), ReaderT, mapReaderT, runReaderT)
 import Control.Monad.RWS (RWST)
@@ -112,13 +113,13 @@ type SqlPersistT = PersistT SqlBackend
 
 -- | Runs a 'SqlPersistT' computation against a SQL database. __Unlike__
 -- 'runPersistT', the computation is run inside a transaction.
-runSqlPersistT :: MonadBaseControl IO m => SqlPersistT m a -> SqlBackend -> m a
+runSqlPersistT :: (MonadUnliftIO m, MonadBaseControl IO m) => SqlPersistT m a -> SqlBackend -> m a
 runSqlPersistT (PersistT m) = runSqlConn m
 {-# INLINE runSqlPersistT #-}
 
 -- | Runs a 'SqlPersistT' computation against a SQL database using a pool of
 -- connections. The computation is run inside a transaction.
-runSqlPoolPersistT :: MonadBaseControl IO m => SqlPersistT m a -> ConnectionPool -> m a
+runSqlPoolPersistT :: (MonadUnliftIO m, MonadBaseControl IO m) => SqlPersistT m a -> ConnectionPool -> m a
 runSqlPoolPersistT (PersistT m) = runSqlPool m
 {-# INLINE runSqlPoolPersistT #-}
 
