@@ -5,6 +5,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -57,6 +58,7 @@ import Control.Monad.Trans.Control
   , defaultLiftWith
   , defaultRestoreM
   , defaultRestoreT
+  , control
   )
 import Control.Monad.Trans.Identity (IdentityT)
 import Control.Monad.Writer (MonadWriter, WriterT)
@@ -113,14 +115,20 @@ type SqlPersistT = PersistT SqlBackend
 -- | Runs a 'SqlPersistT' computation against a SQL database. __Unlike__
 -- 'runPersistT', the computation is run inside a transaction.
 runSqlPersistT :: MonadBaseControl IO m => SqlPersistT m a -> SqlBackend -> m a
-runSqlPersistT (PersistT m) = runSqlConn m
+runSqlPersistT (PersistT m) r = liftBaseRunReaderT (flip runSqlConn r) m
 {-# INLINE runSqlPersistT #-}
 
 -- | Runs a 'SqlPersistT' computation against a SQL database using a pool of
 -- connections. The computation is run inside a transaction.
 runSqlPoolPersistT :: MonadBaseControl IO m => SqlPersistT m a -> ConnectionPool -> m a
-runSqlPoolPersistT (PersistT m) = runSqlPool m
+runSqlPoolPersistT (PersistT m) r = liftBaseRunReaderT (flip runSqlPool r) m
 {-# INLINE runSqlPoolPersistT #-}
+
+-- Helper function for runSqlPersistT and runSqlPoolPersistT to adapt runSqlConn
+-- and runSqlPool to use MonadBaseControl instead of MonadUnliftIO. For more
+-- details, see cjdev/monad-persist#4.
+liftBaseRunReaderT :: MonadBaseControl b m => (forall c. ReaderT r b c -> b c) -> ReaderT r m a -> m a
+liftBaseRunReaderT f m = control $ \runInBase -> f (mapReaderT runInBase m)
 
 instance MonadTransControl (PersistT backend) where
   type StT (PersistT backend) a = StT (ReaderT SqlBackend) a

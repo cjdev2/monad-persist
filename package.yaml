@@ -42,6 +42,7 @@ tests:
     - persistent-sqlite
     - persistent-template
     - text
+    - transformers
     ghc-options:
     - -rtsopts
     - -threaded

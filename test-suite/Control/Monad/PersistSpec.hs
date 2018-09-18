@@ -13,11 +13,12 @@ module Control.Monad.PersistSpec (spec) where
 
 import qualified Test.Hspec as Hspec
 
-import Control.Monad.Logger (NoLoggingT, runNoLoggingT)
+import Control.Monad.Logger (runNoLoggingT)
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad.Trans.Control (MonadBaseControl)
+import Control.Monad.Trans.Class (lift)
+import Control.Monad.Trans.Control (MonadBaseControl, control)
 import Data.Text (Text)
-import Database.Persist.Sqlite (withSqliteConn)
+import Database.Persist.Sqlite (IsSqlBackend, withSqliteConn)
 import Database.Persist.TH
 import Test.Hspec hiding (shouldBe)
 
@@ -33,8 +34,11 @@ User
   deriving Eq Show
 |]
 
-runSqlite :: (MonadIO m, MonadBaseControl IO m) => SqlPersistT (NoLoggingT m) a -> m a
-runSqlite x = runNoLoggingT $ withSqliteConn ":memory:" (runSqlPersistT (runMigrationSilent migrateAll >> x))
+runSqlite :: (MonadIO m, MonadBaseControl IO m) => SqlPersistT m a -> m a
+runSqlite x = liftedWithSqliteConn ":memory:" (runSqlPersistT (runMigrationSilent migrateAll >> x))
+  where
+    liftedWithSqliteConn :: (MonadBaseControl IO m, IsSqlBackend backend) => Text -> (backend -> m a) -> m a
+    liftedWithSqliteConn txt f = control $ \runInBase -> runNoLoggingT (withSqliteConn txt (lift . runInBase . f))
 
 shouldBe :: (Eq a, Show a, MonadIO m) => a -> a -> m ()
 shouldBe x y = liftIO $ Hspec.shouldBe x y
