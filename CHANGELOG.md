@@ -1,3 +1,7 @@
+## 0.0.3.0 (September 18th, 2018)
+
+- Added support for `persistent` version 2.8.0 and above.
+
 ## 0.0.2.0 (November 9th, 2017)
 
 - Added lifting instance for `MonadPersist` for `IdentityT`.
